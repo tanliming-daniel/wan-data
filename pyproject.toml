@@ -2,6 +2,11 @@
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[[index]]
+url="https://pypi.tuna.tsinghua.edu.cn/simple"
+default=true
+
+
 [project]
 name = "wan-data"
 version = "0.1.0"
@@ -14,22 +19,23 @@ dependencies = [
     "pyyaml>=6.0",
     "opencv-python>=4.10",
     "huggingface_hub>=0.24",
+    "setuptools>=68,<81",
 ]
 
 [project.optional-dependencies]
 sam3 = [
     "torch>=2.5",
     "torchvision>=0.20",
-    "sam3",
+    "sam3 @ file:third_party/sam3",
 ]
 body4d = [
-    "sam-body4d",
+    "sam-body4d @ file:third_party/sam-body4d",
 ]
 full = [
     "torch>=2.5",
     "torchvision>=0.20",
-    "sam3",
-    "sam-body4d",
+    "sam3 @ file:third_party/sam3",
+    "sam-body4d @ file:third_party/sam-body4d",
 ]
 
 [project.scripts]

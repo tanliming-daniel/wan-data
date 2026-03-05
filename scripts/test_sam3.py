@@ -108,6 +108,10 @@ def main() -> None:
     try:
         from sam3.model.sam3_video_predictor import Sam3VideoPredictor
     except Exception as exc:
+        if isinstance(exc, ModuleNotFoundError) and exc.name == "pkg_resources":
+            raise RuntimeError(
+                "Missing pkg_resources. Install compatible setuptools: `pip install -U \"setuptools<81\"`."
+            ) from exc
         raise RuntimeError("Failed to import SAM3. Install SAM3 runtime dependencies first.") from exc
 
     predictor = Sam3VideoPredictor(

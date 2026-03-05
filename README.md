@@ -73,6 +73,7 @@ python scripts/preprocess.py --config configs/preprocess.yaml --ckpt-root ./ckpt
 This repo is now `uv`-installable via root `pyproject.toml`.
 
 ```bash
+git submodule update --init --recursive
 uv sync --extra full
 ```
 
@@ -81,6 +82,16 @@ Run commands inside the managed env:
 ```bash
 uv run python scripts/test_sam3.py --load-only
 uv run python scripts/preprocess.py --config configs/preprocess.yaml
+```
+
+Conda + pip is also supported:
+
+```bash
+conda create -n wandata python=3.12 -y
+conda activate wandata
+git submodule update --init --recursive
+pip install -U pip wheel "setuptools<81"
+pip install -e ".[full]"
 ```
 
 ## Backends
