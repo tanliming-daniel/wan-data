@@ -1,8 +1,13 @@
 __pycache__/
 *.py[cod]
+.venv/
+.uv-cache/
+.uv-python/
+.tools/
 processed_dataset/
 ckpts/**
 !ckpts/
 !ckpts/README.md
 !ckpts/**/
 !ckpts/**/.gitkeep
+video/

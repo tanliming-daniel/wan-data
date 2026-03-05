@@ -68,6 +68,21 @@ python scripts/preprocess.py --config configs/preprocess.yaml --prompt "person i
 python scripts/preprocess.py --config configs/preprocess.yaml --ckpt-root ./ckpts
 ```
 
+## UV Environment
+
+This repo is now `uv`-installable via root `pyproject.toml`.
+
+```bash
+uv sync --extra full
+```
+
+Run commands inside the managed env:
+
+```bash
+uv run python scripts/test_sam3.py --load-only
+uv run python scripts/preprocess.py --config configs/preprocess.yaml
+```
+
 ## Backends
 
 This framework is now strict and only supports:

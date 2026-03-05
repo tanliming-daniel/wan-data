@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wan-data"
+version = "0.1.0"
+description = "Data preprocessing pipeline for WAN controllable video training."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.26,<2",
+    "pillow>=10.0",
+    "pyyaml>=6.0",
+    "opencv-python>=4.10",
+    "huggingface_hub>=0.24",
+]
+
+[project.optional-dependencies]
+sam3 = [
+    "torch>=2.5",
+    "torchvision>=0.20",
+    "sam3",
+]
+body4d = [
+    "sam-body4d",
+]
+full = [
+    "torch>=2.5",
+    "torchvision>=0.20",
+    "sam3",
+    "sam-body4d",
+]
+
+[project.scripts]
+wan-data-preprocess = "wan_data.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["wan_data*"]
+
+[tool.uv.sources]
+sam3 = { path = "third_party/sam3", editable = true }
+"sam-body4d" = { path = "third_party/sam-body4d", editable = true }
