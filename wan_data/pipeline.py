@@ -157,6 +157,11 @@ class DataPreprocessingPipeline:
                 bg_path,
                 sam3_first_mask_path=motion.sam3_first_mask_path,
             )
+            if motion.sam3_first_mask_path is not None and motion.sam3_first_mask_path.exists():
+                motion.sam3_first_mask_path.unlink()
+                tmp_dir = motion.sam3_first_mask_path.parent
+                if tmp_dir.name == ".tmp" and tmp_dir.exists() and not any(tmp_dir.iterdir()):
+                    tmp_dir.rmdir()
 
             portrait_path = sample_dir / "subject_portrait.png"
             self.portrait_extractor.extract(frames, masks, portrait_path)

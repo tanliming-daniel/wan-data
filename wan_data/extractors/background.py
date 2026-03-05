@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -57,4 +58,5 @@ class OmniEraserBackgroundExtractor:
             raise RuntimeError(f"OmniEraser command finished but output file not found: {output_background}")
 
         image = np.asarray(Image.open(output_background).convert("RGB"), dtype=np.uint8)
+        shutil.rmtree(omni_input_dir, ignore_errors=True)
         return image

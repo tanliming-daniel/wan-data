@@ -23,7 +23,6 @@ processed_dataset/
       subject_portrait.png
       background.png
       mhr_sequence.jsonl
-      sam3_first_mask.png
       sam3_subjects.json
       subject_portraits/
         obj_0001.png
@@ -86,7 +85,7 @@ This framework is now strict and only supports:
   - runs external command template from `omni_eraser.command`.
   - placeholders: `{video}`, `{masklet_dir}`, `{output_background}`, `{first_frame}`, `{first_mask}`.
   - current pipeline uses OmniEraser on the first frame only (`first_frame + first_mask`) to produce `background.png`.
-  - `first_mask` is taken from `sam3_first_mask.png` (SAM3 output) when available.
+  - `first_mask` uses SAM3 first-frame mask as temporary input (not persisted in dataset).
 
 If either command is empty, preprocessing exits with an error.
 

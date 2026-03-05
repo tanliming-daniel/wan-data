@@ -100,7 +100,7 @@ class SamBody4DMaskletExtractor:
         output_dir.mkdir(parents=True, exist_ok=True)
         sample_dir = output_dir.parent
         requested_mhr_path = sample_dir / "mhr_sequence.jsonl"
-        requested_sam3_first_mask = sample_dir / "sam3_first_mask.png"
+        requested_sam3_first_mask = sample_dir / ".tmp" / "sam3_first_mask.png"
         requested_subject_root = sample_dir / "sam3_subject_masks"
         requested_subjects_json = sample_dir / "sam3_subjects.json"
         command = self.command.format(
