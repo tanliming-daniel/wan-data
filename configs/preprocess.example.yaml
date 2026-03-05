@@ -1,0 +1,24 @@
+input_path: ./videos
+output_root: ./processed_dataset
+recursive: true
+video_extensions: [".mp4", ".mov", ".mkv", ".avi", ".webm"]
+max_frames: null
+copy_target_video: true
+overwrite: false
+dry_run: false
+
+masklet_source: sam_body4d
+background_source: omni_eraser
+
+portrait_margin: 0.2
+
+sam_body4d:
+  enabled: true
+  # Placeholders: {video}, {output_dir}
+  command: "python /path/to/sam_body4d/run.py --video {video} --out {output_dir}"
+
+omni_eraser:
+  enabled: true
+  # Placeholders: {video}, {masklet_dir}, {output_background}, {first_frame}, {first_mask}
+  # Use first-frame inputs for background extraction.
+  command: "python /path/to/omnieraser/run.py --image {first_frame} --mask {first_mask} --output {output_background}"
