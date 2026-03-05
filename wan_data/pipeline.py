@@ -6,6 +6,7 @@ import shutil
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 
 from .config import PreprocessConfig
 from .extractors import (
@@ -49,6 +50,14 @@ def _discover_inputs(config: PreprocessConfig) -> list[Path]:
 
 def _relative(path: Path, base: Path) -> str:
     return str(path.resolve().relative_to(base.resolve()))
+
+
+def _load_binary_mask_stack(mask_dir: Path) -> np.ndarray:
+    mask_paths = sorted([p for p in mask_dir.iterdir() if p.suffix.lower() in {".png", ".jpg", ".jpeg"}])
+    if not mask_paths:
+        raise RuntimeError(f"No subject mask images found in: {mask_dir}")
+    masks = [(np.asarray(Image.open(path).convert("L"), dtype=np.uint8) > 127) for path in mask_paths]
+    return np.stack(masks, axis=0)
 
 
 class DataPreprocessingPipeline:
@@ -127,7 +136,9 @@ class DataPreprocessingPipeline:
                 raise RuntimeError(f"No decoded frames for input: {input_path}")
 
             masklet_dir = sample_dir / "masklets"
-            masks = self.masklet_extractor.extract(input_path, frames, masklet_dir, self.config)
+            motion = self.masklet_extractor.extract(input_path, frames, masklet_dir, self.config)
+            masks = motion.masks
+            mhr_path = motion.mhr_path
             if masks.ndim != 3:
                 raise RuntimeError(f"Masklets must be T,H,W for {input_path}, got {masks.shape}")
 
@@ -138,10 +149,35 @@ class DataPreprocessingPipeline:
                 raise RuntimeError(f"After alignment, no frames remain: {input_path}")
 
             bg_path = sample_dir / "background.png"
-            self.background_extractor.extract(input_path, frames, masks, masklet_dir, bg_path)
+            self.background_extractor.extract(
+                input_path,
+                frames,
+                masks,
+                masklet_dir,
+                bg_path,
+                sam3_first_mask_path=motion.sam3_first_mask_path,
+            )
 
             portrait_path = sample_dir / "subject_portrait.png"
             self.portrait_extractor.extract(frames, masks, portrait_path)
+
+            subject_records: list[dict] = []
+            subject_mask_dirs = motion.subject_mask_dirs or {}
+            subject_portrait_root = sample_dir / "subject_portraits"
+            for obj_id, obj_mask_dir in sorted(subject_mask_dirs.items(), key=lambda x: x[0]):
+                obj_masks = _load_binary_mask_stack(obj_mask_dir)
+                obj_t = min(len(frames), obj_masks.shape[0])
+                if obj_t == 0:
+                    continue
+                obj_portrait_path = subject_portrait_root / f"obj_{int(obj_id):04d}.png"
+                self.portrait_extractor.extract(frames[:obj_t], obj_masks[:obj_t], obj_portrait_path)
+                subject_records.append(
+                    {
+                        "obj_id": int(obj_id),
+                        "portrait": _relative(obj_portrait_path, self.output_root),
+                        "mask_dir": _relative(obj_mask_dir, self.output_root),
+                    }
+                )
 
             metadata = {
                 "sample_id": sample_id,
@@ -149,10 +185,19 @@ class DataPreprocessingPipeline:
                 "height": int(np.asarray(frames[0]).shape[0]),
                 "width": int(np.asarray(frames[0]).shape[1]),
                 target_key: _relative(target_path, self.output_root),
-                "ref_portrait": _relative(portrait_path, self.output_root),
+                "ref_portrait": (
+                    subject_records[0]["portrait"]
+                    if len(subject_records) > 0
+                    else _relative(portrait_path, self.output_root)
+                ),
+                "subject_portrait_merged": _relative(portrait_path, self.output_root),
                 "background_image": _relative(bg_path, self.output_root),
                 "masklets_dir": _relative(masklet_dir, self.output_root),
+                "mhr_sequence": _relative(mhr_path, self.output_root),
+                "subjects": subject_records,
             }
+            if motion.subject_manifest_path is not None:
+                metadata["sam3_subjects_manifest"] = _relative(motion.subject_manifest_path, self.output_root)
 
             metadata_path = sample_dir / "metadata.json"
             metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")

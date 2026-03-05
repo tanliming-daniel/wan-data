@@ -1,5 +1,6 @@
 input_path: ./videos
 output_root: ./processed_dataset
+ckpt_root: ../ckpts
 recursive: true
 video_extensions: [".mp4", ".mov", ".mkv", ".avi", ".webm"]
 max_frames: null
@@ -9,13 +10,14 @@ dry_run: false
 
 masklet_source: sam_body4d
 background_source: omni_eraser
+mask_prompt: "person"
 
 portrait_margin: 0.2
 
 sam_body4d:
   enabled: true
-  # Placeholders: {video}, {output_dir}
-  command: "python /path/to/sam_body4d/run.py --video {video} --out {output_dir}"
+  # Placeholders: {video}, {output_dir}, {sample_dir}, {ckpt_root}, {output_mhr}, {sam3_first_mask}, {sam3_subject_root}, {sam3_subjects_json}, {mask_prompt}
+  command: "python scripts/integrations/run_sam_body4d.py --video {video} --output_dir {output_dir} --output_mhr {output_mhr} --prompt \"{mask_prompt}\" --ckpt_root {ckpt_root} --sam3_repo third_party/sam3 --sam_repo third_party/sam-body4d --work_dir {sample_dir}/sam_body4d_raw --sam3_first_mask {sam3_first_mask} --sam3_subject_root {sam3_subject_root} --sam3_subjects_json {sam3_subjects_json}"
 
 omni_eraser:
   enabled: true

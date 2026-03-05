@@ -1,0 +1,6 @@
+[submodule "third_party/sam-body4d"]
+	path = third_party/sam-body4d
+	url = https://githubfast.com/gaomingqi/sam-body4d.git
+[submodule "third_party/sam3"]
+	path = third_party/sam3
+	url = https://githubfast.com/facebookresearch/sam3.git

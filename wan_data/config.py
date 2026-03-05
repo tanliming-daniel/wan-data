@@ -24,6 +24,7 @@ class OmniEraserConfig:
 class PreprocessConfig:
     input_path: str = "input_videos"
     output_root: str = "processed_dataset"
+    ckpt_root: str = "ckpts"
     recursive: bool = True
     video_extensions: tuple[str, ...] = (".mp4", ".mov", ".mkv", ".avi", ".webm")
     max_frames: int | None = None
@@ -33,6 +34,7 @@ class PreprocessConfig:
 
     masklet_source: str = "sam_body4d"
     background_source: str = "omni_eraser"
+    mask_prompt: str = "person"
     portrait_margin: float = 0.2
 
     sam_body4d: SamBody4DConfig = field(default_factory=SamBody4DConfig)
@@ -46,6 +48,9 @@ class PreprocessConfig:
             self.max_frames = None
         if self.portrait_margin < 0:
             self.portrait_margin = 0.0
+        self.mask_prompt = self.mask_prompt.strip()
+        if not self.mask_prompt:
+            raise ValueError("`mask_prompt` must be a non-empty string.")
         if self.masklet_source != "sam_body4d":
             raise ValueError("Only `sam_body4d` is supported for masklet_source.")
         if self.background_source != "omni_eraser":
@@ -80,6 +85,7 @@ def load_preprocess_config(config_path: str | Path) -> PreprocessConfig:
     known = {
         "input_path",
         "output_root",
+        "ckpt_root",
         "recursive",
         "video_extensions",
         "max_frames",
@@ -88,6 +94,7 @@ def load_preprocess_config(config_path: str | Path) -> PreprocessConfig:
         "dry_run",
         "masklet_source",
         "background_source",
+        "mask_prompt",
         "portrait_margin",
     }
     cfg_kwargs = {k: v for k, v in data.items() if k in known}
@@ -99,6 +106,8 @@ def load_preprocess_config(config_path: str | Path) -> PreprocessConfig:
         cfg.input_path = str((base / cfg.input_path).resolve())
     if not Path(cfg.output_root).is_absolute():
         cfg.output_root = str((base / cfg.output_root).resolve())
+    if not Path(cfg.ckpt_root).is_absolute():
+        cfg.ckpt_root = str((base / cfg.ckpt_root).resolve())
 
     cfg.normalize()
     return cfg

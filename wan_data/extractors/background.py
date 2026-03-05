@@ -20,6 +20,7 @@ class OmniEraserBackgroundExtractor:
         masks: np.ndarray,
         masklet_dir: Path,
         output_background: Path,
+        sam3_first_mask_path: Path | None = None,
     ) -> np.ndarray:
         if not self.command:
             raise ValueError("omni_eraser.command is empty.")
@@ -35,7 +36,11 @@ class OmniEraserBackgroundExtractor:
         first_mask_path = omni_input_dir / "first_mask.png"
 
         Image.fromarray(frames[0].astype(np.uint8), mode="RGB").save(first_frame_path)
-        Image.fromarray((masks[0].astype(np.uint8) * 255), mode="L").save(first_mask_path)
+        if sam3_first_mask_path is not None and sam3_first_mask_path.exists():
+            first_mask_img = Image.open(sam3_first_mask_path).convert("L")
+            first_mask_img.save(first_mask_path)
+        else:
+            Image.fromarray((masks[0].astype(np.uint8) * 255), mode="L").save(first_mask_path)
 
         command = self.command.format(
             video=str(video_path),
